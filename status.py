@@ -3,6 +3,18 @@ import streamlit as st
 import os
 import tempfile
 
+# Definindo o título da página
+st.title(Indev Ribas)
+
+# Nome da sua empresa
+nome_empresa = "Indev Ribas"
+
+# Adicionando um espaço em branco para mover o título para cima
+st.sidebar.text("")
+
+# Adicionando o nome da empresa na barra lateral
+st.sidebar.title(nome_empresa)
+
 
 def main():
     st.title("Processamento de Arquivos Excel")
