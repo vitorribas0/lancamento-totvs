@@ -4,7 +4,7 @@ import os
 import tempfile
 
 # Definindo o título da página
-st.title(Indev Ribas)
+st.title("Indev Ribas")
 
 # Nome da sua empresa
 nome_empresa = "Indev Ribas"
