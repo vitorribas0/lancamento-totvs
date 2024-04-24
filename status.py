@@ -62,7 +62,7 @@ def main():
         lançado['DDT.PG.'] = lançado['DT.PG.'].dt.strftime('%d/%m/%Y')
 
         lançado = lançado[
-            ['Num NFe', 'Razão Soc. Emit', 'Valor', 'Data Emissão', 'CNPJ Dest', 'FORNECEDOR', 'tipo', 'VALOR', 'NF',
+            ['Num NFe', 'Razão Soc. Emit', 'Valor', 'Data Emissão', 'CNPJ Dest', 'FORNECEDOR', 'tipo', 'VALOR', 'NF','RAZÃO SOCIAL',
              'CENTRO DE RESPONSABILIDADE', 'DESCRIÇÃO APROPRIAÇÃO',
              'DT.PG.', 'OBSERVAÇÃO']]
 
