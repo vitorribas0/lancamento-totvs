@@ -14,7 +14,10 @@ def install_dependencies():
 def convert_ipynb_to_py(ipynb_path, py_path):
     try:
         with open(ipynb_path, 'r', encoding='utf-8') as f:
-            nb = nbformat.read(f, as_version=4)
+            content = f.read()
+            if not content.strip():
+                raise ValueError("O arquivo está vazio")
+            nb = nbformat.reads(content, as_version=4)
         exporter = PythonExporter()
         script, _ = exporter.from_notebook_node(nb)
         with open(py_path, 'w', encoding='utf-8') as f:
