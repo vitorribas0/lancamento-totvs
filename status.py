@@ -1,63 +1,45 @@
 import streamlit as st
-import subprocess
+import pandas as pd
 import pickle
 import os
-import uuid
-import logging
-
-# Configure o logging
-logging.basicConfig(level=logging.DEBUG)
 
 def main():
-    st.title("Execução de Script Python com Leitura de Excel")
+    st.title("Execução de Script Python com Leitura de Excel e Pickle")
 
-    # Upload do arquivo Python
-    uploaded_file = st.file_uploader("Escolha um arquivo Python", type=["py","ipynb"])
+    # Upload do arquivo Excel
+    uploaded_excel = st.file_uploader("Escolha um arquivo Excel", type=["xlsx"])
 
-    if uploaded_file is not None:
-        # Gerar um nome de arquivo único para evitar colisões
-        unique_filename = f"uploaded_script_{uuid.uuid4()}.py"
-        with open(unique_filename, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+    if uploaded_excel is not None:
+        # Salvar o arquivo carregado temporariamente
+        with open("uploaded_excel.xlsx", "wb") as f:
+            f.write(uploaded_excel.getbuffer())
 
-        logging.debug(f"Arquivo Python carregado: {unique_filename}")
-
-        # Executar o script carregado e capturar a saída
+        # Ler o arquivo Excel carregado
         try:
-            result = subprocess.run(["python", unique_filename], capture_output=True, text=True)
-            logging.debug("Script executado com sucesso.")
+            df = pd.read_excel("uploaded_excel.xlsx")
+            st.subheader("Dados do Excel Carregado:")
+            st.dataframe(df)
+
+            # Exemplo de processamento e salvamento de dados em pickle
+            output_data = {"dados": df.to_dict()}  # Exemplo de dados que seriam salvos
+
+            # Salvar os dados em um arquivo pickle
+            with open("output_data.pkl", "wb") as f:
+                pickle.dump(output_data, f)
+
+            st.success("Dados processados e salvos com sucesso em 'output_data.pkl'")
         except Exception as e:
-            st.subheader("Erro na execução do script:")
-            st.error(e)
-            logging.error(f"Erro na execução do script: {e}")
-            return
+            st.error(f"Erro ao processar o arquivo Excel: {e}")
 
-        # Exibir a saída do script
-        st.subheader("Saída do Script:")
-        st.text(result.stdout)
-
-        # Exibir erros, se houver
-        if result.stderr:
-            st.subheader("Erros:")
-            st.text(result.stderr)
-
-        # Ler os dados armazenados no arquivo pickle
-        pickle_file_path = "output_data.pkl"  # Caminho do arquivo pickle na máquina local
-        if os.path.exists(pickle_file_path):
-            try:
-                with open(pickle_file_path, "rb") as f:
-                    df = pickle.load(f)
-                st.subheader("Dados do Excel:")
-                st.dataframe(df)
-            except Exception as e:
-                st.write("Não foi possível ler os dados do Excel:", e)
-                logging.error(f"Erro ao ler os dados do Excel: {e}")
-        else:
-            st.write(f"Arquivo '{pickle_file_path}' não encontrado.")
-            logging.error(f"Arquivo '{pickle_file_path}' não encontrado.")
-
-        # Remover o arquivo temporário
-        os.remove(unique_filename)
+    # Verificar e exibir o arquivo pickle se existir
+    if os.path.exists("output_data.pkl"):
+        try:
+            with open("output_data.pkl", "rb") as f:
+                loaded_data = pickle.load(f)
+            st.subheader("Dados do Arquivo Pickle:")
+            st.write(loaded_data)
+        except Exception as e:
+            st.error(f"Não foi possível ler os dados do arquivo pickle: {e}")
 
 if __name__ == "__main__":
     main()
