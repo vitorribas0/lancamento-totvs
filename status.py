@@ -28,26 +28,32 @@ def convert_ipynb_to_py(ipynb_path, py_path):
     return True
 
 def main():
-    st.title("Execução de Notebook Jupyter com Leitura de Excel")
+    st.title("Execução de Script/Notebook com Leitura de Excel")
 
-    # Upload do arquivo Notebook
-    uploaded_file = st.file_uploader("Escolha um arquivo Jupyter Notebook", type=["ipynb"])
+    # Upload do arquivo Notebook ou Script
+    uploaded_file = st.file_uploader("Escolha um arquivo Jupyter Notebook ou Python Script", type=["ipynb", "py"])
 
     if uploaded_file is not None:
         # Salvar o arquivo carregado
-        ipynb_path = "uploaded_notebook.ipynb"
-        py_path = "uploaded_script.py"
-        with open(ipynb_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-        
-        # Converter o Notebook para script Python
-        if not convert_ipynb_to_py(ipynb_path, py_path):
-            st.stop()  # Se a conversão falhar, parar a execução
+        file_type = uploaded_file.name.split('.')[-1]
+        if file_type == 'ipynb':
+            ipynb_path = "uploaded_notebook.ipynb"
+            py_path = "uploaded_script.py"
+            with open(ipynb_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            
+            # Converter o Notebook para script Python
+            if not convert_ipynb_to_py(ipynb_path, py_path):
+                st.stop()  # Se a conversão falhar, parar a execução
+        else:
+            py_path = "uploaded_script.py"
+            with open(py_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
         
         # Instalar dependências necessárias
         install_dependencies()
         
-        # Executar o script Python gerado e capturar a saída
+        # Executar o script Python gerado ou carregado e capturar a saída
         result = subprocess.run(["python", py_path], capture_output=True, text=True)
         
         # Exibir a saída do script
@@ -71,7 +77,8 @@ def main():
             st.write("Ocorreu um erro ao ler os dados do Excel:", e)
 
         # Limpar arquivos temporários
-        os.remove(ipynb_path)
+        if file_type == 'ipynb':
+            os.remove(ipynb_path)
         os.remove(py_path)
 
 if __name__ == "__main__":
