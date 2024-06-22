@@ -3,3 +3,4 @@ pandas
 openpyxl
 nbformat
 nbconvert 
+uuid
