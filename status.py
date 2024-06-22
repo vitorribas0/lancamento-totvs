@@ -1,21 +1,13 @@
 import streamlit as st
 import pickle
 import pandas as pd
-import io
-import tempfile
-import os
+import base64
 
 def main():
     st.title("Leitura de Arquivo .pkl no Streamlit")
 
     # Upload do arquivo .pkl
     uploaded_file = st.file_uploader("Escolha um arquivo .pkl", type=["pkl"])
-
-    # Selecionar ação
-    choice = st.selectbox('Escolha uma ação', ['Carregar e Mostrar Dados', 'Inserir Excel'])
-
-    # Caminho para o arquivo Excel
-    csv_file_excel = 'dados_carregados.xlsx'
 
     if uploaded_file is not None:
         try:
@@ -43,23 +35,21 @@ def main():
             st.subheader("Dados em Formato de DataFrame:")
             st.dataframe(df)
 
-            # Função para salvar DataFrame como arquivo Excel e retornar o caminho do arquivo
-            def save_excel(df):
-                with pd.ExcelWriter(csv_file_excel, engine='openpyxl') as writer:
-                    df.to_excel(writer, index=False)
-                return csv_file_excel
+            # Função para converter DataFrame para Excel em Base64
+            def df_to_base64(df):
+                output = io.BytesIO()
+                writer = pd.ExcelWriter(output, engine='openpyxl')
+                df.to_excel(writer, index=False)
+                writer.save()
+                excel_data = output.getvalue()
+                return base64.b64encode(excel_data).decode()
 
-            # Salvar o DataFrame como arquivo Excel se a opção for escolhida
-            if choice == 'Inserir Excel':
-                file_path = save_excel(df)
-                st.success(f"Dados salvos como Excel em: {file_path}")
+            # Converter DataFrame para Excel em Base64
+            excel_b64 = df_to_base64(df)
 
-            # Mostrar os dados do arquivo Excel armazenado se a escolha for 'Inserir Excel' e o arquivo existir
-            if choice == 'Inserir Excel' and os.path.exists(csv_file_excel):
-                df_excel = pd.read_excel(csv_file_excel)
-                if not df_excel.empty:
-                    st.write('**Dados do Excel Armazenados:**')
-                    st.write(df_excel)
+            # Criar link para baixar o arquivo Excel
+            href = f'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{excel_b64}'
+            st.markdown(f'Download do [Excel em Base64]({href})')
 
         except Exception as e:
             st.error(f"Erro ao carregar o arquivo .pkl: {e}")
