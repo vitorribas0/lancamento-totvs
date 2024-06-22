@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import pandas as pd
 import base64
+import io  # Importando io para usar BytesIO
 
 def main():
     st.title("Leitura de Arquivo .pkl no Streamlit")
