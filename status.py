@@ -50,10 +50,12 @@ def main():
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
 
+            # Exibir os dados na tela após a conversão
+            st.subheader("Dados em Excel:")
+            st.write(df)
+
         except Exception as e:
             st.error(f"Erro ao carregar o arquivo .pkl: {e}")
-
-        st.write(df)
 
 if __name__ == "__main__":
     main()
