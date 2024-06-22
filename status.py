@@ -12,10 +12,14 @@ def main():
 
     if uploaded_file is not None:
         try:
-            # Ler os dados do arquivo .pkl
+            # Ler os dados do arquivo .pkl e armazenar em uma variável
             loaded_data = pickle.load(uploaded_file)
 
-            # Tentar converter para DataFrame
+            # Mostrar os dados na tela de forma responsiva
+            st.subheader("Dados Carregados:")
+            st.write(loaded_data)
+
+            # Converter para DataFrame se possível
             if isinstance(loaded_data, pd.DataFrame):
                 df = loaded_data
             elif isinstance(loaded_data, dict):
@@ -29,31 +33,31 @@ def main():
                 else:
                     df = pd.DataFrame(loaded_data)
             else:
-                st.error("Formato de dados não suportado para conversão para DataFrame.")
-                return
+                df = None
 
-            # Mostrar os dados na tela de forma responsiva
-            st.subheader("Dados em Formato de DataFrame:")
-            st.dataframe(df)
+            # Se houver um DataFrame, mostrar na tela
+            if df is not None:
+                st.subheader("Dados em Formato de DataFrame:")
+                st.dataframe(df)
 
-            # Função para converter DataFrame para Excel em Base64
-            def df_to_excel_base64(df):
-                output = io.BytesIO()
-                writer = pd.ExcelWriter(output, engine='openpyxl')
-                df.to_excel(writer, index=False)
-                writer.close()  # Fechar o escritor
-                excel_data = output.getvalue()
-                return excel_data
+                # Função para converter DataFrame para Excel em Base64
+                def df_to_excel_base64(df):
+                    output = io.BytesIO()
+                    writer = pd.ExcelWriter(output, engine='openpyxl')
+                    df.to_excel(writer, index=False)
+                    writer.close()  # Fechar o escritor
+                    excel_data = output.getvalue()
+                    return excel_data
 
-            # Converter DataFrame para Excel em Base64
-            excel_data = df_to_excel_base64(df)
+                # Converter DataFrame para Excel em Base64
+                excel_data = df_to_excel_base64(df)
 
-            # Codificar o Excel em Base64
-            b64 = base64.b64encode(excel_data).decode()
+                # Codificar o Excel em Base64
+                b64 = base64.b64encode(excel_data).decode()
 
-            # Gerar link para download
-            href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="dados.xlsx">Baixar Excel</a>'
-            st.markdown(href, unsafe_allow_html=True)
+                # Gerar link para download
+                href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="dados.xlsx">Baixar Excel</a>'
+                st.markdown(href, unsafe_allow_html=True)
 
         except Exception as e:
             st.error(f"Erro ao carregar o arquivo .pkl: {e}")
