@@ -11,6 +11,12 @@ def main():
     # Upload do arquivo .pkl
     uploaded_file = st.file_uploader("Escolha um arquivo .pkl", type=["pkl"])
 
+    # Selecionar ação
+    choice = st.selectbox('Escolha uma ação', ['Carregar e Mostrar Dados', 'Inserir Excel'])
+
+    # Caminho para o arquivo Excel
+    csv_file_excel = 'dados_carregados.xlsx'
+
     if uploaded_file is not None:
         try:
             # Ler os dados do arquivo .pkl
@@ -39,17 +45,21 @@ def main():
 
             # Função para salvar DataFrame como arquivo Excel e retornar o caminho do arquivo
             def save_excel(df):
-                temp_dir = tempfile.mkdtemp()
-                file_path = os.path.join(temp_dir, "dados_carregados.xlsx")
-                with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+                with pd.ExcelWriter(csv_file_excel, engine='openpyxl') as writer:
                     df.to_excel(writer, index=False)
-                return file_path
+                return csv_file_excel
 
-            # Salvar o DataFrame como arquivo Excel
-            file_path = save_excel(df)
+            # Salvar o DataFrame como arquivo Excel se a opção for escolhida
+            if choice == 'Inserir Excel':
+                file_path = save_excel(df)
+                st.success(f"Dados salvos como Excel em: {file_path}")
 
-            # Criar link para baixar o arquivo Excel
-            st.markdown(f"[Baixar dados como Excel](file://{file_path})")
+            # Mostrar os dados do arquivo Excel armazenado se a escolha for 'Inserir Excel' e o arquivo existir
+            if choice == 'Inserir Excel' and os.path.exists(csv_file_excel):
+                df_excel = pd.read_excel(csv_file_excel)
+                if not df_excel.empty:
+                    st.write('**Dados do Excel Armazenados:**')
+                    st.write(df_excel)
 
         except Exception as e:
             st.error(f"Erro ao carregar o arquivo .pkl: {e}")
