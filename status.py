@@ -53,5 +53,7 @@ def main():
         except Exception as e:
             st.error(f"Erro ao carregar o arquivo .pkl: {e}")
 
+        st.write(df)
+
 if __name__ == "__main__":
     main()
