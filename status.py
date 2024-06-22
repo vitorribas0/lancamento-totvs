@@ -2,6 +2,8 @@ import streamlit as st
 import pickle
 import pandas as pd
 import io
+import tempfile
+import os
 
 def main():
     st.title("Leitura de Arquivo .pkl no Streamlit")
@@ -35,24 +37,19 @@ def main():
             st.subheader("Dados em Formato de DataFrame:")
             st.dataframe(df)
 
-            # Função para converter DataFrame para bytes de Excel
-            def to_excel_bytes(df):
-                output = io.BytesIO()
-                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            # Função para salvar DataFrame como arquivo Excel e retornar o caminho do arquivo
+            def save_excel(df):
+                temp_dir = tempfile.mkdtemp()
+                file_path = os.path.join(temp_dir, "dados_carregados.xlsx")
+                with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
                     df.to_excel(writer, index=False)
-                return output.getvalue()
+                return file_path
 
-            # Botão para baixar os dados como arquivo Excel
-            st.download_button(
-                label="Baixar dados como Excel",
-                data=to_excel_bytes(df),
-                file_name="dados_carregados.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+            # Salvar o DataFrame como arquivo Excel
+            file_path = save_excel(df)
 
-            # Exibir os dados na tela após a conversão
-            st.subheader("Dados em Excel:")
-            st.write(df)
+            # Criar link para baixar o arquivo Excel
+            st.markdown(f"[Baixar dados como Excel](file://{file_path})")
 
         except Exception as e:
             st.error(f"Erro ao carregar o arquivo .pkl: {e}")
