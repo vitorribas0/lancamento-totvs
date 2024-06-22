@@ -5,20 +5,24 @@ from nbconvert import PythonExporter
 import pickle
 import os
 import sys
-import subprocess
 
 def install_dependencies():
-    dependencies = ["pandas", "openpyxl"]
+    dependencies = ["pandas", "openpyxl", "nbconvert", "nbformat"]
     for dependency in dependencies:
         subprocess.check_call([sys.executable, "-m", "pip", "install", dependency])
 
 def convert_ipynb_to_py(ipynb_path, py_path):
-    with open(ipynb_path, 'r', encoding='utf-8') as f:
-        nb = nbformat.read(f, as_version=4)
-    exporter = PythonExporter()
-    script, _ = exporter.from_notebook_node(nb)
-    with open(py_path, 'w', encoding='utf-8') as f:
-        f.write(script)
+    try:
+        with open(ipynb_path, 'r', encoding='utf-8') as f:
+            nb = nbformat.read(f, as_version=4)
+        exporter = PythonExporter()
+        script, _ = exporter.from_notebook_node(nb)
+        with open(py_path, 'w', encoding='utf-8') as f:
+            f.write(script)
+    except Exception as e:
+        st.error(f"Erro ao converter o notebook: {e}")
+        return False
+    return True
 
 def main():
     st.title("Execução de Notebook Jupyter com Leitura de Excel")
@@ -34,8 +38,9 @@ def main():
             f.write(uploaded_file.getbuffer())
         
         # Converter o Notebook para script Python
-        convert_ipynb_to_py(ipynb_path, py_path)
-
+        if not convert_ipynb_to_py(ipynb_path, py_path):
+            st.stop()  # Se a conversão falhar, parar a execução
+        
         # Instalar dependências necessárias
         install_dependencies()
         
