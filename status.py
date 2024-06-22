@@ -22,9 +22,6 @@ def main():
                 with open("uploaded_data.pkl", "rb") as f:
                     loaded_data = pickle.load(f)
 
-                st.subheader("Dados Carregados do Arquivo .pkl:")
-                st.write(loaded_data)
-
                 # Tentar converter para DataFrame
                 if isinstance(loaded_data, pd.DataFrame):
                     df = loaded_data
@@ -39,9 +36,9 @@ def main():
                     st.error("Formato de dados não suportado para conversão para DataFrame.")
                     return
 
-                # Mostrar os dados na tela
+                # Mostrar os dados na tela de forma responsiva
                 st.subheader("Dados em Formato de DataFrame:")
-                st.write(df)
+                st.dataframe(df)
 
                 # Função para converter DataFrame para bytes de Excel
                 def to_excel_bytes(df):
