@@ -1,6 +1,7 @@
 import streamlit as st
 import subprocess
 import pickle
+import pandas as pd
 
 
 def main():
