@@ -36,20 +36,23 @@ def main():
             st.dataframe(df)
 
             # Função para converter DataFrame para Excel em Base64
-            def df_to_base64(df):
+            def df_to_excel_base64(df):
                 output = io.BytesIO()
                 writer = pd.ExcelWriter(output, engine='openpyxl')
                 df.to_excel(writer, index=False)
                 writer.save()
                 excel_data = output.getvalue()
-                return base64.b64encode(excel_data).decode()
+                return excel_data
 
             # Converter DataFrame para Excel em Base64
-            excel_b64 = df_to_base64(df)
+            excel_data = df_to_excel_base64(df)
 
-            # Criar link para baixar o arquivo Excel
-            href = f'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{excel_b64}'
-            st.markdown(f'Download do [Excel em Base64]({href})')
+            # Codificar o Excel em Base64
+            b64 = base64.b64encode(excel_data).decode()
+
+            # Gerar link para download
+            href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="dados.xlsx">Baixar Excel</a>'
+            st.markdown(href, unsafe_allow_html=True)
 
         except Exception as e:
             st.error(f"Erro ao carregar o arquivo .pkl: {e}")
