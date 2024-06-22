@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import os
 import pandas as pd
+import io
 
 def main():
     st.title("Leitura de Arquivo .pkl no Streamlit")
@@ -24,11 +25,16 @@ def main():
                 st.subheader("Dados Carregados do Arquivo .pkl:")
                 st.write(loaded_data)
 
-                # Converter os dados carregados para um DataFrame do pandas, se for possível
-                if isinstance(loaded_data, dict):
-                    df = pd.DataFrame.from_dict(loaded_data)
+                # Tentar converter para DataFrame
+                if isinstance(loaded_data, pd.DataFrame):
+                    df = loaded_data
+                elif isinstance(loaded_data, dict):
+                    df = pd.DataFrame([loaded_data]) if not any(isinstance(i, (list, dict)) for i in loaded_data.values()) else pd.DataFrame.from_dict(loaded_data, orient='index').T
                 elif isinstance(loaded_data, list):
-                    df = pd.DataFrame(loaded_data)
+                    if all(isinstance(i, dict) for i in loaded_data):
+                        df = pd.DataFrame(loaded_data)
+                    else:
+                        df = pd.DataFrame(loaded_data)
                 else:
                     st.error("Formato de dados não suportado para conversão para DataFrame.")
                     return
@@ -37,10 +43,17 @@ def main():
                 st.subheader("Dados em Formato de DataFrame:")
                 st.write(df)
 
+                # Função para converter DataFrame para bytes de Excel
+                def to_excel_bytes(df):
+                    output = io.BytesIO()
+                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                        df.to_excel(writer, index=False)
+                    return output.getvalue()
+
                 # Botão para baixar os dados como arquivo Excel
                 st.download_button(
                     label="Baixar dados como Excel",
-                    data=df.to_excel(index=False, engine='openpyxl'),
+                    data=to_excel_bytes(df),
                     file_name="dados_carregados.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
