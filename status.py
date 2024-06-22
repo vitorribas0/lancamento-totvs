@@ -3,6 +3,7 @@ import subprocess
 import pickle
 import os
 import uuid
+import pandas as pd
 
 def main():
     st.title("Execução de Script Python com Leitura de Excel")
