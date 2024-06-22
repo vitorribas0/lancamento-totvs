@@ -1,66 +1,65 @@
 import streamlit as st
-import pickle
 import pandas as pd
 import base64
-import io  # Importando io para usar BytesIO
+import os
+import pickle
+
+# Função para salvar dados em um arquivo Pickle
+def save_data_to_pickle(data, filename):
+    with open(filename, 'wb') as f:
+        pickle.dump(data, f)
+
+# Função para carregar dados de um arquivo Pickle
+def load_data_from_pickle(filename):
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
 
 def main():
-    st.title("Leitura de Arquivo .pkl no Streamlit")
+    st.title("Armazenamento e Acesso de Dados")
 
-    # Upload do arquivo .pkl
-    uploaded_file = st.file_uploader("Escolha um arquivo .pkl", type=["pkl"])
+    # Nome do arquivo para armazenar os dados
+    pickle_file = 'dados.pkl'
 
-    if uploaded_file is not None:
-        try:
-            # Ler os dados do arquivo .pkl e armazenar em uma variável
-            loaded_data = pickle.load(uploaded_file)
+    # Sidebar com opções
+    menu = ['Inserir Dados', 'Visualizar Dados']
+    choice = st.sidebar.selectbox('Escolha uma opção', menu)
 
-            # Mostrar os dados na tela de forma responsiva
-            st.subheader("Dados Carregados:")
-            st.write(loaded_data)
+    # Opção para inserir dados
+    if choice == 'Inserir Dados':
+        st.title('Inserir Dados')
 
-            # Converter para DataFrame se possível
+        # Campos para entrada de dados (exemplo com DataFrame)
+        st.write('Insira dados como um DataFrame:')
+        data = pd.DataFrame({
+            'Nome': ['Alice', 'Bob', 'Charlie'],
+            'Idade': [25, 30, 35]
+        })
+
+        # Mostrar dados na tela
+        st.write(data)
+
+        # Botão para salvar dados em um arquivo Pickle
+        if st.button('Salvar Dados'):
+            save_data_to_pickle(data, pickle_file)
+            st.success(f'Dados salvos com sucesso em {pickle_file}')
+
+    # Opção para visualizar dados
+    elif choice == 'Visualizar Dados':
+        st.title('Visualizar Dados')
+
+        # Verifica se o arquivo existe antes de tentar carregar
+        if os.path.exists(pickle_file):
+            loaded_data = load_data_from_pickle(pickle_file)
+
+            # Exibir os dados carregados
             if isinstance(loaded_data, pd.DataFrame):
-                df = loaded_data
-            elif isinstance(loaded_data, dict):
-                if all(isinstance(v, (list, dict)) for v in loaded_data.values()):
-                    df = pd.DataFrame.from_dict(loaded_data, orient='index').T
-                else:
-                    df = pd.DataFrame([loaded_data])
-            elif isinstance(loaded_data, list):
-                if all(isinstance(item, dict) for item in loaded_data):
-                    df = pd.DataFrame(loaded_data)
-                else:
-                    df = pd.DataFrame(loaded_data)
+                st.write('**Dados carregados:**')
+                st.write(loaded_data)
             else:
-                df = None
-
-            # Se houver um DataFrame, mostrar na tela
-            if df is not None:
-                st.subheader("Dados em Formato de DataFrame:")
-                st.dataframe(df)
-
-                # Função para converter DataFrame para Excel em Base64
-                def df_to_excel_base64(df):
-                    output = io.BytesIO()
-                    writer = pd.ExcelWriter(output, engine='openpyxl')
-                    df.to_excel(writer, index=False)
-                    writer.close()  # Fechar o escritor
-                    excel_data = output.getvalue()
-                    return excel_data
-
-                # Converter DataFrame para Excel em Base64
-                excel_data = df_to_excel_base64(df)
-
-                # Codificar o Excel em Base64
-                b64 = base64.b64encode(excel_data).decode()
-
-                # Gerar link para download
-                href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="dados.xlsx">Baixar Excel</a>'
-                st.markdown(href, unsafe_allow_html=True)
-
-        except Exception as e:
-            st.error(f"Erro ao carregar o arquivo .pkl: {e}")
+                st.write('Dados carregados:')
+                st.write(loaded_data)
+        else:
+            st.write('Nenhum dado foi armazenado ainda.')
 
 if __name__ == "__main__":
     main()
