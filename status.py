@@ -41,7 +41,7 @@ def main():
                 output = io.BytesIO()
                 writer = pd.ExcelWriter(output, engine='openpyxl')
                 df.to_excel(writer, index=False)
-                writer.save()
+                writer.close()  # Fechar o escritor
                 excel_data = output.getvalue()
                 return excel_data
 
