@@ -1,4 +1,9 @@
-
+import streamlit as st
+import pandas as pd
+import base64
+import os
+import pickle
+import tempfile
 
 # Função para salvar dados em um arquivo Pickle
 def save_data_to_pickle(data, filename):
