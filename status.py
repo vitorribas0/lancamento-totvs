@@ -1,69 +1,39 @@
 import streamlit as st
-import pandas as pd
-import base64
-import os
-import pickle
-import tempfile
+import speech_recognition as sr
 
-# Função para salvar dados em um arquivo Pickle
-def save_data_to_pickle(data, filename):
-    with open(filename, 'wb') as f:
-        pickle.dump(data, f)
+# Função para realizar a transcrição
+def transcribe_audio(file):
+    recognizer = sr.Recognizer()
 
-# Função para carregar dados de um arquivo Pickle
-def load_data_from_pickle(filename):
-    with open(filename, 'rb') as f:
-        return pickle.load(f)
+    # Abre o arquivo de áudio
+    with sr.AudioFile(file) as source:
+        audio_data = recognizer.record(source)
+    
+    # Tenta reconhecer o áudio usando o Google Speech Recognition
+    try:
+        text = recognizer.recognize_google(audio_data, language='pt-BR')
+        return text
+    except sr.UnknownValueError:
+        return "Não foi possível entender o áudio"
+    except sr.RequestError as e:
+        return f"Erro ao conectar ao serviço de reconhecimento: {e}"
 
-def main():
-    st.title("Leitura de Arquivo .pkl no Streamlit")
+# Título da aplicação
+st.title("Upload e Transcrição de Áudio")
 
-    # Nome do arquivo .pkl para armazenar os dados em um diretório temporário
-    pickle_file = os.path.join(tempfile.gettempdir(), 'dados.pkl')
+# Upload de arquivos
+uploaded_file = st.file_uploader("Escolha um arquivo de áudio", type=["mp3", "m4a", "wav"])
 
-    # Sidebar com opções
-    menu = ['Carregar Dados', 'Visualizar Dados']
-    choice = st.sidebar.selectbox('Escolha uma opção', menu)
-
-    # Opção para carregar dados do arquivo .pkl
-    if choice == 'Carregar Dados':
-        st.title('Carregar Dados de Arquivo .pkl')
-
-        # Upload do arquivo .pkl
-        uploaded_file = st.file_uploader("Escolha um arquivo .pkl para carregar", type=["pkl"])
-
-        if uploaded_file is not None:
-            try:
-                # Ler os dados do arquivo .pkl
-                loaded_data = pickle.load(uploaded_file)
-
-                # Salvar os dados carregados em um arquivo .pkl localmente
-                save_data_to_pickle(loaded_data, pickle_file)
-                st.success(f'Dados carregados e salvos com sucesso em {pickle_file}')
-
-            except Exception as e:
-                st.error(f"Erro ao carregar o arquivo .pkl: {e}")
-
-    # Opção para visualizar dados carregados
-    elif choice == 'Visualizar Dados':
-        st.title('Visualizar Dados Carregados')
-
-        # Verifica se o arquivo .pkl existe antes de tentar carregar
-        if os.path.exists(pickle_file):
-            try:
-                loaded_data = load_data_from_pickle(pickle_file)
-
-                # Exibir os dados carregados
-                if isinstance(loaded_data, pd.DataFrame):
-                    st.write('**Dados carregados como DataFrame:**')
-                    st.write(loaded_data)
-                else:
-                    st.write('**Dados carregados:**')
-                    st.write(loaded_data)
-            except Exception as e:
-                st.error(f"Erro ao carregar o arquivo .pkl: {e}")
-        else:
-            st.write('Nenhum dado foi carregado ainda.')
-
-if __name__ == "__main__":
-    main()
+if uploaded_file is not None:
+    # Exibe informações do arquivo
+    st.write(f"Nome do arquivo: {uploaded_file.name}")
+    
+    # Realiza a transcrição
+    with st.spinner('Transcrevendo o áudio...'):
+        transcription = transcribe_audio(uploaded_file)
+    
+    # Exibe a transcrição
+    st.write("**Transcrição:**")
+    st.write(transcription)
+else:
+    st.write("Nenhum arquivo foi carregado.")
