@@ -4,3 +4,4 @@ openpyxl
 nbformat
 nbconvert 
 uuid
+SpeechRecognition
